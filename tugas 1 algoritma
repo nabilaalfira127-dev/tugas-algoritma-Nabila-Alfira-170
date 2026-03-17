@@ -1,0 +1,213 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+struct Produk {
+    char name[60];
+    char category[30];
+    double price;
+    int stock;
+    float rating;
+};
+
+Produk data[100];
+int n = 0;
+
+// FILE 
+void loadFile() {
+    FILE *pointer = fopen("shopease_db.txt", "r");
+    if (pointer == NULL) return;
+
+    while (fscanf(pointer, " %[^|]|%[^|]|%lf|%d|%f\n",
+        data[n].name,
+        data[n].category,
+        &data[n].price,
+        &data[n].stock,
+        &data[n].rating) != EOF) {
+        n++;
+    }
+
+    fclose(pointer);
+}
+
+void saveFile() {
+    FILE *pointer = fopen("shopease_db.txt", "w");
+
+    for (int i = 0; i < n; i++) {
+        fprintf(pointer, "%s|%s|%.0lf|%d|%.1f\n",
+            data[i].name,
+            data[i].category,
+            data[i].price,
+            data[i].stock,
+            data[i].rating);
+    }
+
+    fclose(pointer);
+}
+
+// TAMBAH 
+void tambahProduk() {
+    
+    cout << "Nama Produk: ";
+    cin >> data[n].name;
+
+    cout << "Kategori: ";
+    cin >> data[n].category;
+
+    cout << "Harga: ";
+    cin >> data[n].price;
+
+    cout << "Stok: ";
+    cin >> data[n].stock;
+
+    cout << "Rating (0-5): ";
+    cin >> data[n].rating;
+
+    n++;
+
+    saveFile();
+
+    cout << "Produk berhasil ditambahkan!" << endl;
+}
+
+// BUBBLE SORT (Nama ASC) 
+void bubbleSort() {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (strcmp(data[j].name, data[j + 1].name) > 0) {
+                Produk temp;
+                temp = data[i];
+                data[i] = data[j];
+                data[j] = temp;
+            }
+        }
+    }
+}
+
+//  QUICK SORT (Rating DESC)
+int indexPivot(int low, int high) {
+    float pivot = data[high].rating;
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (data[j].rating > pivot) {
+            i++;
+           Produk temp;
+                temp = data[i];
+                data[i] = data[j];
+                data[j] = temp;
+        }
+    }
+
+    Produk temp;
+    temp = data[i+1];
+    data[i+1] = data[high];
+    data[high] = temp;
+    return i + 1;
+}
+
+void quickSort(int low, int high) {
+    if (low < high) {
+        float pivot = data[high].rating;
+       int i = low - 1;
+       
+       for (int j = low; j < high; j++) {
+								if (data[j].rating > pivot) {
+                i++;
+								Produk temp;
+                temp = data[i];
+                data[i] = data[j];
+                data[j] = temp;
+															}
+															
+    }Produk temp;
+        temp = data[i+1];
+        data[i+1] = data[high];
+        data[high] = temp;
+
+        int indexPivot = i + 1;
+
+        quickSort(low, indexPivot - 1);
+        quickSort(indexPivot + 1, high);
+}
+}
+
+// OUTPUT
+void tampilProduk() {
+    int pilihan;
+    cout << "1. Urut Nama" << endl;
+    cout << "2. Urut Rating" << endl;
+    cout << "Pilih: ";
+    cin >> pilihan;
+
+    if (pilihan == 1) bubbleSort();
+    else if (pilihan == 2) quickSort(0, n - 1);
+
+    cout << "=== DAFTAR PRODUK ===" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << data[i].name << " | ";
+        cout << data[i].category << " | ";
+        cout << data[i].price << " | ";
+        cout << data[i].stock << " | ";
+        cout << data[i].rating << endl;
+    }
+}
+
+// SEARCH (SEQUENTIAL)
+void cariProduk() {
+    char cari[60];
+
+    cout << "Masukkan nama produk: ";
+    cin >> cari;
+
+    bool found = false;
+
+    for (int i = 0; i < n; i++) {
+        if (strcmp(data[i].name, cari) == 0) {
+            cout << "Produk ditemukan!";
+            cout << data[i].name << " | ";
+            cout << data[i].category << " | ";
+            cout << data[i].price << " | ";
+            cout << data[i].stock << " | ";
+            cout << data[i].rating << endl;
+
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Produk tidak ditemukan!";
+    }
+}
+
+// MAIN
+int main() {
+    loadFile();
+
+    int menu;
+    do {
+        cout << "=== SHOP EASE CLI ===" << endl;
+        cout << "1. Tambah Produk\n";
+        cout << "2. Tampilkan Produk\n";
+        cout << "3. Cari Produk\n";
+        cout << "4. Keluar\n";
+        cout << "Pilih: ";
+        cin >> menu;
+
+        switch (menu) {
+            case 1: tambahProduk(); 
+												break;
+            case 2: tampilProduk(); 
+            break;
+            case 3: cariProduk(); 
+            break;
+            case 4: saveFile();
+                cout << "Terima kasih!" << endl;
+                break;
+        }
+
+    } while (menu != 4);
+
+    return 0;
+}
